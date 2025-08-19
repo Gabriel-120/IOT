@@ -1,22 +1,20 @@
-const int botaopin = 2;
-const int ledPin = 13;
-int botaostatus = 0;
-int ultimoEstado = HIGH;
-bool estadoLed = false;
-
 void setup() {
-  pinMode(ledPin, OUTPUT);
-  pinMode(botaopin, INPUT_PULLUP);
+pinMode(11, OUTPUT);
+pinMode(12, OUTPUT);
+pinMode(7, OUTPUT);
 }
 
 void loop() {
-  botaostatus = digitalRead(botaopin);
-
-  if (botaostatus == LOW && ultimoEstado == HIGH) {
-    estadoLed = !estadoLed;
-    digitalWrite(ledPin, estadoLed);
-    delay(200);
-  }
-
-  ultimoEstado = botaostatus;
+  digitalWrite(11, HIGH);
+  delay(2000);
+  digitalWrite(11, LOW);
+  delay(2000);
+  digitalWrite(12, HIGH);
+  delay(500);
+  digitalWrite(12, LOW);
+  delay(500);
+ digitalWrite(7, HIGH);
+  delay(2000);
+  digitalWrite(7, LOW);
+  delay(2000);
 }
