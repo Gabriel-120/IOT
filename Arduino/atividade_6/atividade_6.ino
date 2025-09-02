@@ -1,5 +1,5 @@
 const int botao = 12;
-int botaostatus = 0;
+int botaostatus = 1;
 int Estado = HIGH;
 bool estado = false;
 
