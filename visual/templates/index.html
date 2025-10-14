@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="PT-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projeto - Leds</title>
+    <style>
+        /* Reset mínimo */
+        * { box-sizing: border-box; }
+
+        :root{
+            --bg: #f7f9fb;
+            --card: #ffffff;
+            --muted: #6b7280;
+            --accent: #2563eb; /* azul */
+            --success: #16a34a; /* verde */
+            --danger: #dc2626; /* vermelho */
+            --radius: 12px;
+            --glass: rgba(255,255,255,0.6);
+        }
+
+        body {
+            margin: 0;
+            font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+            background: linear-gradient(180deg,var(--bg), #eef2f6);
+            color: #111827;
+            -webkit-font-smoothing:antialiased;
+            -moz-osx-font-smoothing:grayscale;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 32px;
+        }
+
+        .container{
+            width: 100%;
+            max-width: 980px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: 0 8px 24px rgba(16,24,40,0.06);
+        }
+
+        .titulo-principal {
+            text-align: center;
+            margin-bottom: 18px;
+        }
+
+        h1{ margin: 0 0 8px 0; font-size: 20px; }
+        h2{ margin: 0 0 6px 0; font-size: 16px; color: #0f172a; }
+
+        .lead { color: var(--muted); font-size: 14px; margin-bottom: 18px; }
+
+        .led-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            align-items: start;
+        }
+
+        .led-card {
+            border-radius: 12px;
+            padding: 18px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.9), var(--card));
+            border: 1px solid rgba(15,23,42,0.04);
+            box-shadow: 0 6px 18px rgba(2,6,23,0.04);
+            text-align: center;
+        }
+
+        .led-title{ font-weight:600; color:#0f172a; margin-bottom: 8px; }
+
+        .btn-row{ display:flex; gap:10px; justify-content:center; margin-top:12px; }
+
+        .btn{
+            appearance: none;
+            border: none;
+            padding: 10px 14px;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            font-weight:600;
+            transition: transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+            box-shadow: 0 4px 10px rgba(2,6,23,0.06);
+        }
+
+        .btn:active{ transform: translateY(1px); }
+        .btn:disabled{ opacity: .6; cursor: not-allowed; }
+
+        .btn--success{ background: linear-gradient(180deg,var(--success), #07924a); }
+        .btn--danger{ background: linear-gradient(180deg,var(--danger), #b91c1c); }
+
+        /* small helper for status dot */
+        .status{
+            display:inline-flex; align-items:center; gap:8px; justify-content:center; margin-top:8px;
+            color:var(--muted); font-size:13px;
+        }
+
+        .dot{ width:12px; height:12px; border-radius:99px; background:#94a3b8; box-shadow: 0 2px 6px rgba(2,6,23,0.06); }
+        .dot.on{ background: var(--success); }
+        .dot.off{ background: #f87171; }
+
+        /* Responsividade */
+        @media (max-width:420px){
+            body{ padding: 18px; }
+            h1{ font-size:18px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <main class="card">
+            <section class="titulo-principal">
+                <h1>Controle de LEDs com Arduino via Web</h1>
+                <p class="lead">Use os botões abaixo para enviar comandos ao seu Arduino (exemplo estático nesta página).</p>
+            </section>
+
+            <div class="led-container">
+                <div class="led-card" id="led1">
+                    <div class="led-title">LED 1 <small style="color:var(--muted); font-weight:500;">(Verde)</small></div>
+                    <div class="status"><span class="dot off" aria-hidden></span><span>Offline</span></div>
+                    <div class="btn-row">
+                        <button class="btn btn--success" onclick="">Ligar</button>
+                        <button class="btn btn--danger" onclick="">Desligar</button>
+                    </div>
+                </div>
+
+                <div class="led-card" id="led2">
+                    <div class="led-title">LED 2 <small style="color:var(--muted); font-weight:500;">(Vermelho)</small></div>
+                    <div class="status"><span class="dot off" aria-hidden></span><span>Offline</span></div>
+                    <div class="btn-row">
+                        <button class="btn btn--success" onclick="">Ligar</button>
+                        <button class="btn btn--danger" onclick="">Desligar</button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+
+    
+    <script>
+        // Verifica o status do Arduino periodicamente
+        async function checkArduinoStatus() {
+            try {
+                const response = await fetch('/status');
+                const data = await response.json();
+                const allDots = document.querySelectorAll('.dot');
+                const allButtons = document.querySelectorAll('button');
+                
+                if (data.status === 'connected') {
+                    allButtons.forEach(btn => btn.disabled = false);
+                    document.querySelectorAll('.status span:last-child').forEach(span => {
+                        if (span.parentElement.querySelector('.dot').classList.contains('off')) {
+                            span.textContent = 'Desligado';
+                        }
+                    });
+                } else {
+                    allDots.forEach(dot => {
+                        dot.classList.remove('on');
+                        dot.classList.add('off');
+                    });
+                    allButtons.forEach(btn => btn.disabled = true);
+                    document.querySelectorAll('.status span:last-child').forEach(span => {
+                        span.textContent = 'Arduino Desconectado';
+                    });
+                }
+            } catch (error) {
+                console.error('Erro ao verificar status:', error);
+            }
+        }
+
+        // Verifica o status inicial e a cada 5 segundos
+        checkArduinoStatus();
+        setInterval(checkArduinoStatus, 5000);
+
+        // Função para controlar os LEDs
+        async function controlLED(ledNum, action) {
+            try {
+                // Desabilita os botões durante a operação
+                const card = document.getElementById(`led${ledNum}`);
+                const buttons = card.querySelectorAll('button');
+                const statusDot = card.querySelector('.dot');
+                const statusText = statusDot.nextElementSibling;
+                
+                // Adiciona efeito de loading
+                buttons.forEach(btn => btn.disabled = true);
+                statusDot.classList.add('loading');
+                
+                // Faz a requisição para o servidor
+                const response = await fetch(`/control/${ledNum}/${action}`);
+                const data = await response.json();
+                
+                // Atualiza o status visual
+                if (response.ok) {
+                    statusDot.classList.remove('off', 'on', 'loading');
+                    statusDot.classList.add(action === 'on' ? 'on' : 'off');
+                    statusText.textContent = action === 'on' ? 'Ligado' : 'Desligado';
+                    
+                    if (data.message) {
+                        console.log('Arduino respondeu:', data.message);
+                    }
+                } else {
+                    throw new Error(data.error || 'Erro desconhecido');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro ao controlar o LED: ' + error.message);
+                // Atualiza status do Arduino
+                await checkArduinoStatus();
+            } finally {
+                // Remove efeito de loading e reabilita os botões
+                const card = document.getElementById(`led${ledNum}`);
+                const buttons = card.querySelectorAll('button');
+                const statusDot = card.querySelector('.dot');
+                buttons.forEach(btn => btn.disabled = false);
+                statusDot.classList.remove('loading');
+            }
+        }
+    </script>
+</body>
+</html>
