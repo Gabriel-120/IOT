@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de LEDs com Arduino via Web</title>
+</head>
+<body>
+    
+    <div class="container">
+        <h1>Controle de LEDs com Arduino via Web</h1>
+
+        <div class="ledverde">
+            <h2>LED 1 (Verde)</h2>
+            <button class="on" style="background-color: green;" onclick="controlled('1', 'on')">Ligar</button>
+            <button class="off"  style="background-color: red;" onclick="controlled('1', 'off')">Desligar</button>
+        </div>
+
+        <div class="ledvermelho">
+            <h2>LED 2 (Vermelho)</h2>
+            <button class="on" style="background-color: green;" onclick="controlled('2', 'on')">Ligar</button>
+            <button class="off" style="background-color: red;" onclick="controlled('2', 'off')">Desligar</button>
+        </div>
+
+        <div class="ledamarelo">
+            <h2>LED 3 (Amarelo)</h2>
+            <button class="on" style="background-color: green;" onclick="controlled('3', 'on')">Ligar</button>
+            <button class="off" style="background-color: red;" onclick="controlled('3', 'off')">Desligar</button>
+        </div>
+    </div>
+
+    <script>
+        function controlled(ledNum, action) {
+            // A função fetch envia uma reputação para o nosso  servidor Python
+            fetch(`/control/${ledNum}/${action}`)
+            .then(response => response.text())
+            .then(data => {
+                console.log(data); //Mostra a resposta do servidor no console do navegador
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+            });
+        }
+    </script>
+    
+    <style>
+ body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    text-align: center;
+    padding: 30px;
+}
+
+h1 {
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.ledverde, .ledvermelho, .ledamarelo {
+    display: inline-block;
+    background-color: #d3d1d1;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 10px;
+    box-shadow: 0 0 5px rgba(0,0,0,0.1);
+}
+
+h2 {
+    color: #444;
+    margin-bottom: 10px;
+}
+
+button {
+    border: none;
+    color: white;
+    padding: 8px 18px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 4px;
+    font-size: 14px;
+}
+
+button:hover {
+    opacity: 0.85;
+}
+
+    </style>
+
+</body>
+</html>
